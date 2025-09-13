@@ -41,7 +41,7 @@ public class BurgerPriceParameterizedTest {
     }
 
     @Test
-    public void testGetPrice_variousCombinations() {
+    public void testGetPriceVariousCombinations() {
         // Настраиваем бургер с моком булочки и стабами ингредиентов
         Burger burger = new Burger();
 

@@ -15,7 +15,7 @@ public class BurgerTest {
     }
 
     @Test
-    public void testGetReceipt_withoutIngredients() {
+    public void testGetReceiptWithoutIngredients() {
         Burger burger = new Burger();
 
         Bun bun = mock(Bun.class);
@@ -23,7 +23,6 @@ public class BurgerTest {
         when(bun.getPrice()).thenReturn(7.0f);
         burger.setBuns(bun);
 
-        // Receipt при пустом списке ингредиентов
         String expected = String.format("(==== %s ====)%n", "Test Bun");
         expected += String.format("(==== %s ====)%n", "Test Bun");
         expected += String.format("%nPrice: %f%n", burger.getPrice());
@@ -33,7 +32,7 @@ public class BurgerTest {
     }
 
     @Test
-    public void testGetReceipt_withIngredients_formatAndOrder() {
+    public void testGetReceiptWithIngredientsFormatAndOrder() {
         Burger burger = new Burger();
 
         Bun bun = mock(Bun.class);
@@ -41,7 +40,6 @@ public class BurgerTest {
         when(bun.getPrice()).thenReturn(2.0f);
         burger.setBuns(bun);
 
-        // Создаём два стаб-ингредиента с типами и именами
         Ingredient sauce = mock(Ingredient.class);
         when(sauce.getType()).thenReturn(IngredientType.SAUCE);
         when(sauce.getName()).thenReturn("Ketchup");
@@ -64,41 +62,104 @@ public class BurgerTest {
         assertEquals(expected.toString(), burger.getReceipt());
     }
 
+    // --- Добавление: по одному утверждению на тест ---
     @Test
-    public void testAddRemoveAndMoveIngredients_behaviour() {
+    public void testAddIngredientsSize() {
         Burger burger = new Burger();
-
         Ingredient a = mock(Ingredient.class);
         Ingredient b = mock(Ingredient.class);
         Ingredient c = mock(Ingredient.class);
 
-        // добавляем три ингредиента
         burger.addIngredient(a);
         burger.addIngredient(b);
         burger.addIngredient(c);
 
         assertEquals(3, burger.ingredients.size());
+    }
+
+    @Test
+    public void testFirstIngredientIsAAfterAdd() {
+        Burger burger = new Burger();
+        Ingredient a = mock(Ingredient.class);
+        Ingredient b = mock(Ingredient.class);
+        Ingredient c = mock(Ingredient.class);
+
+        burger.addIngredient(a);
+        burger.addIngredient(b);
+        burger.addIngredient(c);
+
         assertSame(a, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void testSecondIngredientIsBAfterAdd() {
+        Burger burger = new Burger();
+        Ingredient a = mock(Ingredient.class);
+        Ingredient b = mock(Ingredient.class);
+        Ingredient c = mock(Ingredient.class);
+
+        burger.addIngredient(a);
+        burger.addIngredient(b);
+        burger.addIngredient(c);
+
         assertSame(b, burger.ingredients.get(1));
-        assertSame(c, burger.ingredients.get(2));
+    }
 
-        // удаление по индексу 1 (b)
+    // --- Удаление: по одному утверждению на тест ---
+    @Test
+    public void testRemoveIngredientReducesSize() {
+        Burger burger = new Burger();
+        Ingredient a = mock(Ingredient.class);
+        Ingredient b = mock(Ingredient.class);
+        Ingredient c = mock(Ingredient.class);
+
+        burger.addIngredient(a);
+        burger.addIngredient(b);
+        burger.addIngredient(c);
+
         burger.removeIngredient(1);
-        assertEquals(2, burger.ingredients.size());
-        assertSame(a, burger.ingredients.get(0));
-        assertSame(c, burger.ingredients.get(1));
 
-        // перекидываем текущий индекс 1 -> 0
-        burger.moveIngredient(1, 0);
         assertEquals(2, burger.ingredients.size());
+    }
+
+    @Test
+    public void testRemoveIngredientShiftsElements() {
+        Burger burger = new Burger();
+        Ingredient a = mock(Ingredient.class);
+        Ingredient b = mock(Ingredient.class);
+        Ingredient c = mock(Ingredient.class);
+
+        burger.addIngredient(a);
+        burger.addIngredient(b);
+        burger.addIngredient(c);
+
+        burger.removeIngredient(1);
+
+        assertSame(c, burger.ingredients.get(1));
+    }
+
+    // --- Перемещение: одна проверка ---
+    @Test
+    public void testMoveIngredientReorders() {
+        Burger burger = new Burger();
+        Ingredient a = mock(Ingredient.class);
+        Ingredient b = mock(Ingredient.class);
+        Ingredient c = mock(Ingredient.class);
+
+        burger.addIngredient(a);
+        burger.addIngredient(b);
+        burger.addIngredient(c);
+
+        // повторяем сценарий: удалить средний, затем переместить последний на позицию 0
+        burger.removeIngredient(1);
+        burger.moveIngredient(1, 0);
+
         assertSame(c, burger.ingredients.get(0));
-        assertSame(a, burger.ingredients.get(1));
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
-    public void testRemoveIngredient_throwsWhenIndexInvalid() {
+    public void testRemoveIngredientThrowsWhenIndexInvalid() {
         Burger burger = new Burger();
-        // Пытаемся удалить из пустого списка -> IndexOutOfBoundsException
         burger.removeIngredient(0);
     }
 }
