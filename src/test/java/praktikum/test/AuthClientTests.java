@@ -5,6 +5,7 @@ import io.qameta.allure.junit4.DisplayName;
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import net.datafaker.Faker;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import praktikum.model.Client;
@@ -19,6 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class AuthClientTests extends TestBase {
     private ClientSteps clientSteps;
     private Client validClient;
+    private String accessToken;
 
     @Before
     @Step("Подготовка тестовых данных")
@@ -31,6 +33,19 @@ public class AuthClientTests extends TestBase {
                 .setPassword(faker.internet().password())
                 .setName(faker.name().firstName());
         clientSteps.createClient(validClient);
+        ValidatableResponse loginResp = clientSteps.loginClient(validClient);
+        try {
+            accessToken = loginResp.extract().path("accessToken");
+        } catch (Exception ignore){
+            accessToken =null;
+        }
+    }
+    @After
+    @Step("Удаление тестового пользователя")
+    public void delClient(){
+        if (accessToken != null && !accessToken.isEmpty()){
+            clientSteps.deleteClient(accessToken);
+        }
     }
 
     @Test

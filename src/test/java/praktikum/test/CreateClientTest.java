@@ -4,7 +4,9 @@ package praktikum.test;
 import io.qameta.allure.Description;
 import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.ValidatableResponse;
 import net.datafaker.Faker;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import praktikum.model.Client;
@@ -17,6 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class CreateClientTest extends TestBase{
     private final ClientSteps clientSteps = new ClientSteps();
     private Client client;
+    private Client originalClient;
 
 
     @Before
@@ -27,7 +30,31 @@ public class CreateClientTest extends TestBase{
                 .setEmail(faker.internet().emailAddress())
                 .setPassword(faker.internet().password())
                 .setName(faker.name().firstName());
+        originalClient = new Client()
+                .setEmail(client.getEmail())
+                .setPassword(client.getPassword())
+                .setName(client.getName());
 
+
+    }
+    @After
+    @Step("Удаление тестового пользователя")
+    public void tearDownClient() {
+        if (originalClient == null) return;
+
+        try {
+            ValidatableResponse loginResp = clientSteps.loginClient(originalClient);
+            String accessToken = null;
+            try {
+                accessToken = loginResp.extract().path("accessToken");
+            } catch (Exception ignored) {}
+
+            if (accessToken != null && !accessToken.isEmpty()) {
+                clientSteps.deleteClient(accessToken);
+            }
+        } catch (Exception ignored) {
+
+        }
     }
     @Test
     @DisplayName("Создать уникального пользователя")
@@ -85,4 +112,5 @@ public class CreateClientTest extends TestBase{
                 .body("message", equalTo("Email, password and name are required fields"));
 
     }
+
 }

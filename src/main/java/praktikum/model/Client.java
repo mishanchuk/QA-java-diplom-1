@@ -1,6 +1,5 @@
 package praktikum.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Client {
     private String email;

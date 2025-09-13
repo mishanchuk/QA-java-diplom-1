@@ -1,27 +1,17 @@
 package praktikum.test;
 
-import io.qameta.allure.Description;
+import io.qameta.allure.*;
 import io.qameta.allure.junit4.DisplayName;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import net.datafaker.Faker;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import praktikum.model.Client;
 import praktikum.model.Order;
 import praktikum.steps.ClientSteps;
 import praktikum.steps.OrderSteps;
-
 import java.util.*;
-
 import static org.apache.http.HttpStatus.*;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 
@@ -33,6 +23,7 @@ public class CreateOrderTests extends TestBase{
     private Order order;
     private ClientSteps clientSteps;
     private Client validClient;
+    private Client originalClient;
     private List<String> randomIngredients;
 
     @Before
@@ -47,10 +38,32 @@ public class CreateOrderTests extends TestBase{
                 .setPassword(faker.internet().password())
                 .setName(faker.name().firstName());
         clientSteps.createClient(validClient);
+        originalClient = new Client()
+                .setEmail(validClient.getEmail())
+                .setPassword(validClient.getPassword())
+                .setName(validClient.getName());
         randomIngredients = orderSteps.getRandomIngredientIds(3);
 
     }
+    @After
+    @Step("Удаление тестового пользователя")
+    public void tearDown() {
+        if (originalClient == null) return;
 
+        try {
+            ValidatableResponse loginResp = clientSteps.loginClient(originalClient);
+            String accessToken = null;
+            try {
+                accessToken = loginResp.extract().path("accessToken");
+            } catch (Exception ignored) {}
+
+            if (accessToken != null && !accessToken.isEmpty()) {
+                clientSteps.deleteClient(accessToken);
+            }
+        } catch (Exception ignored) {
+            // если логин не удался — пользователь, вероятно, не был создан или уже удалён
+        }
+    }
     @Test
     @DisplayName("Создание заказа авторизованным пользователем")
     @Description("Позитивный кейс")

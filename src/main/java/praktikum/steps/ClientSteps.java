@@ -30,5 +30,13 @@ public class ClientSteps {
                 .post(RestConfig.LOGIN_PATH)
                 .then();
     }
+    public ValidatableResponse deleteClient(String accessToken) {
+    return given()
+            // некоторым API нужен префикс "Bearer ", некоторым - просто токен
+            .header("Authorization", accessToken)
+            .when()
+            .delete("/api/auth/user")
+            .then();
+ }
 
 }
